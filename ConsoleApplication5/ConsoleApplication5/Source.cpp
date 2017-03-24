@@ -6,28 +6,32 @@ using namespace std;
 
 void main() {
 	const size_t MaxStringSize = 255;
-	int i, sum;
-	char OneCharString[2];
+	int num, sum;
+	char OneCharString[2]="";
 	char* string = new char[MaxStringSize];
+
 	do {
 		cout << "Enter a digits (or empty for exit): ";
 		cin.getline(string, MaxStringSize);
 		if (*string == '\0') continue;
-		i = sum = 0;
-		_itoa(atoi(string), string, 10);
 
-		for (; string[i] != '\0'; i++)
+		num = sum = 0;
+		_itoa(atoi(string), string, 10); // take only digits
+
+		while (string[num] != '\0')
 		{
-			if (string[i] < '0' || string[i] > '9') continue;
-			_itoa((string[i] - '0'), OneCharString, 10);
+			OneCharString[0] = string[num];
+			// another solution: _itoa((string[i] - '0'), OneCharString, 10);
 			sum += atoi(OneCharString);
+			num++;
 		}
+
 		cout << "------------------------------------------------" << endl;
 		cout << " Description (" << string << ")\t\t| Result" << endl;
 		cout << "------------------------------------------------" << endl;
-		cout << " Number of digits\t\t| " << i << endl;
+		cout << " Number of digits\t\t| " << num << endl;
 		cout << " Sum of digits of number\t| " << sum << endl;
-		cout << " strrev * 2\t\t\t| " << atoi(_strrev(string)) * 2 << endl;
+		cout << " " << string << " * 2  \t\t\t| " << atoi(_strrev(string)) * 2 << endl;
 		cout << "------------------------------------------------" << endl;
 		cout << endl;
 	} while (*string != '\0');
