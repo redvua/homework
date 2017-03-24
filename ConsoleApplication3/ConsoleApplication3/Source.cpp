@@ -16,7 +16,7 @@ void main() {
 	const size_t MaxStringSize = 255;
 	char* string = new char[MaxStringSize];
 	do {
-		cout << "Enter the string (or nothing to exit): ";
+		cout << "Enter the string (or empty to exit): ";
 		cin.getline(string, MaxStringSize);
 		if (*string == '\0') continue;
 		AoverO(string);

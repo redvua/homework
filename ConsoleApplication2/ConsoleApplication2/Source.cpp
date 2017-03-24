@@ -15,7 +15,7 @@ void main() {
 	char* string = new char[MaxStringSize];
 	int sum[CharacterGroups] = { 0 };
 	do {
-		cout << "Enter the string (or nothing to exit): ";
+		cout << "Enter the string (or empty to exit): ";
 		cin.getline(string, MaxStringSize);
 		if (*string == '\0') continue;
 		fill(sum, sum + CharacterGroups, 0);
