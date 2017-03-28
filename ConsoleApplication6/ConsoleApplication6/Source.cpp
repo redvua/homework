@@ -54,9 +54,9 @@ struct Fraction
 	}
 	void Show()
 	{
-		if (numerator / denominator) printf("%d ", numerator / denominator); // целая часть
-		Reduction(); // сокращение
-		if (numerator%denominator) printf("%d/%d", numerator%denominator, denominator); // дробная часть
+		if (numerator / denominator) printf("%d ", numerator / denominator); // С†РµР»Р°СЏ С‡Р°СЃС‚СЊ
+		Reduction(); // СЃРѕРєСЂР°С‰РµРЅРёРµ
+		if (numerator%denominator) printf("%d/%d", numerator%denominator, denominator); // РґСЂРѕР±РЅР°СЏ С‡Р°СЃС‚СЊ
 		cout << endl;
 	}
 };
@@ -95,7 +95,7 @@ struct Parser
 		for (size_t i = 0; buff[i] != '\0'; i++)
 		{
 			int num = 0;
-			if (isdigit(buff[i])) // проверить отрицательные -12
+			if (isdigit(buff[i])) // РїСЂРѕРІРµСЂРёС‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рµ -12
 			{
 				num = atoi(buff);
 			}
