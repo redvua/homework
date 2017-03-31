@@ -107,7 +107,19 @@ struct Solution
 			if (*buff == ' ') ++buff;
 			else if (*buff == '+') result.Inc(subj), ++buff, subj = { 0,1 }, state = Sstate;
 			else if (*buff == '-') result.Inc(subj), ++buff, subj = { 0,-1 }, state = Sstate;
+			else if (*buff == '*') ++buff, state = Mstate;
+			else if (*buff == '/') ++buff, state = Dstate;
 			else if (*buff == '=') result.Inc(subj), ++buff, subj = { 0,1 }, error = (*buff != '\0'), state = End;
+			else error = true;
+			break;
+		case Mstate:
+			subj.Mul({ strtol(buff, &buff, 10),1 }); // обрабатывает цифру ноль в том числе
+			if (offset < buff) state = Astate;
+			else error = true;
+			break;
+		case Dstate:
+			subj.Div({ strtol(buff, &buff, 10),1 }); // обрабатывает цифру ноль в том числе
+			if (offset < buff) state = Astate;
 			else error = true;
 			break;
 		case End:
@@ -122,11 +134,11 @@ struct Solution
 
 void main()
 {
-	char* string = new char[MaxStringSize] {"1+2-12+20="}; //"-11/2+22/03"
+	char* string = new char[MaxStringSize] {"1 + 2/3 -12 + 20 ="}; //"-11/2+22/03"
 	Solution wrap = Solution(string);
 	wrap = Solution("3 - 5 + 0 =");
 	wrap = Solution(" 12 - 5 + 10 =");
-	wrap = Solution(" 0 - 5 + 10 =");
+	wrap = Solution(" 0*2 -5 * -3/-6 + 10 =");
 	wrap = Solution(" ( - 5 + 10 =");
 	//Fraction{ 13,169 }.Show();
 	//Fraction{ 5,4 }.Inc({ 1,2 })->Mul({1,2})->Show();
