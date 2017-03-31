@@ -42,11 +42,6 @@ struct Fraction
 		this->denominator *= item.numerator;
 		return this;
 	}
-	Fraction* Minus()
-	{
-		this->denominator *= -1;
-		return this;
-	}
 	void Reduction() {	
 		int min = (numerator < denominator) ? numerator : denominator;
 		for (; min > 1; --min)
@@ -69,7 +64,7 @@ struct Fraction
 };
 struct Solution
 {
-	enum State { Si, Sm, Sd, Re, Se, Begin, Count, End, States = End } state;
+	enum State { Sstate, Astate, Mstate, Dstate, End, States = End } state;
 	char* buff; //
 	bool error;
 	// Solution* subject;
@@ -85,7 +80,8 @@ struct Solution
 		this->error = false;
 
 		result = Fraction();
-		state = Si;
+		subj = Fraction();
+		state = Sstate;
 		while (*this->buff != '\0' && !error) Step();
 
 		if (error) cout << "Error: " << this->buff;
@@ -95,47 +91,31 @@ struct Solution
 	//Solution() :Solution(nullptr)
 	//{
 	//}
-	//Fraction* Inc(char* buff, Fraction result) {
-	//	result.Inc(this->result);// Parser(buff).Shift;
-	//}
-	//Fraction* Mul(char* buff, Fraction result) {
-	//	this->result.Mul(result); // Parser(buff).Shift;
-	//}
 	void Step() {
+		char* offset = buff;
 		
 		// только %d - +
 		switch (state)
 		{
-		case Si:
-			subj = Fraction();
-			state = Sm;
+		case Sstate:
+			subj.numerator = strtol(buff, &buff, 10); // обрабатывает цифру ноль в том числе
+			if (offset < buff) state = Astate;
+			else error = true;
+			//if (*buff == ' ') ++buff;
 			break;
-		case Sm:
-			// -
+		case Astate:
 			if (*buff == ' ') ++buff;
-			if (*buff == '-') subj.Minus(), ++buff; state = Sd; // subj = 0/-1
-			if (isdigit(*buff)) state = Sd;
+			if (*buff == '=') result.Inc(subj), ++buff, subj = { 0,1 }, error = (*buff != '\0'), state = End;
+			if (*buff == '+') result.Inc(subj), ++buff, subj = { 0,1 }, state = Sstate;
+			if (*buff == '-') result.Inc(subj), ++buff, subj = { 0,-1 }, state = Sstate;
 			break;
-		case Sd:
-			// %d
-			if (*buff == ' ') ++buff;
-			else if (isdigit(*buff)) subj.numerator = strtol(buff,&buff,10), state = Re; // subj.numerator = %d
-				else error = true;
+		case End:
 			break;
-		case Re:
-			if (*buff == ' ') ++buff;
-			else if (*buff == '+') result.Inc(subj), ++buff, state = Si; // result += subj
-				else if (*buff == '=') result.Inc(subj), ++buff, state = Si; // result += subj
-					else if (*buff == '-') result.Inc(subj), state = Si; // result += subj
-						else error = true; // ?
-			break;
-		// case End:
 		default:
 			error = true;
 
 			break;
 		}
-		// this->subject = nullptr;
 	}
 };
 
@@ -144,7 +124,9 @@ void main()
 	char* string = new char[MaxStringSize] {"1+2-12+20="}; //"-11/2+22/03"
 	Solution wrap = Solution(string);
 	wrap = Solution("3 - 5 + 0 =");
-	wrap = Solution(" 12 - 5 + 10 = ");
+	wrap = Solution(" 12 - 5 + 10 =");
+	wrap = Solution(" 0 - 5 + 10 =");
+	wrap = Solution(" ( - 5 + 10 =");
 	//Fraction{ 13,169 }.Show();
 	//Fraction{ 5,4 }.Inc({ 1,2 })->Mul({1,2})->Show();
 	//Fraction{ 3,4 }.Mul({ 11,18 })->Show();
