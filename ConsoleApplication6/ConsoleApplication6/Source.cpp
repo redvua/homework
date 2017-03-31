@@ -105,9 +105,10 @@ struct Solution
 			break;
 		case Astate:
 			if (*buff == ' ') ++buff;
-			if (*buff == '=') result.Inc(subj), ++buff, subj = { 0,1 }, error = (*buff != '\0'), state = End;
-			if (*buff == '+') result.Inc(subj), ++buff, subj = { 0,1 }, state = Sstate;
-			if (*buff == '-') result.Inc(subj), ++buff, subj = { 0,-1 }, state = Sstate;
+			else if (*buff == '+') result.Inc(subj), ++buff, subj = { 0,1 }, state = Sstate;
+			else if (*buff == '-') result.Inc(subj), ++buff, subj = { 0,-1 }, state = Sstate;
+			else if (*buff == '=') result.Inc(subj), ++buff, subj = { 0,1 }, error = (*buff != '\0'), state = End;
+			else error = true;
 			break;
 		case End:
 			break;
