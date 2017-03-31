@@ -42,7 +42,9 @@ struct Fraction
 		this->denominator *= item.numerator;
 		return this;
 	}
-	void Reduction() {	
+	void Reduction()
+	{
+		if (numerator < 0 && denominator < 0) this->Mul({-1, -1}); // сокращение знака
 		int min = (numerator < denominator) ? numerator : denominator;
 		for (; min > 1; --min)
 		{
