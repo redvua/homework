@@ -105,21 +105,24 @@ struct Solution
 	//Solution() :Solution(nullptr)
 	//{
 	//}
-	void Step() {
+	int GetNum() // long
+	{
 		char* offset = buff;
+		int out;
+		out = strtol(buff, &buff, 10); // обрабатывает цифру ноль в том числе
+		error = (offset == buff);
+		return out;
+	}
+	void Step() {
 		
 		// только %d - +
 		switch (state)
 		{
+
 		case Sstate:
 			if (*buff == ' ') ++buff;
 			//else if (*buff == '(') ++buff, subj = Solution(buff).result;
-			else
-			{
-			subj.numerator = strtol(buff, &buff, 10); // обрабатывает цифру ноль в том числе
-			if (offset < buff) state = Astate;
-			else error = true;
-			}
+			else subj.numerator = GetNum(), state = Astate;
 			break;
 		case Astate:
 			if (*buff == ' ') ++buff;
@@ -131,14 +134,10 @@ struct Solution
 			else error = true;
 			break;
 		case Mstate:
-			subj.Mul({ strtol(buff, &buff, 10),1 }); // обрабатывает цифру ноль в том числе
-			if (offset < buff) state = Astate;
-			else error = true;
+			subj.Mul( GetNum() );
 			break;
 		case Dstate:
-			subj.Div({ strtol(buff, &buff, 10),1 }); // обрабатывает цифру ноль в том числе
-			if (offset < buff) state = Astate;
-			else error = true;
+			subj.Div( GetNum() ), state = Astate;
 			break;
 		case End:
 			break;
@@ -154,11 +153,11 @@ void main()
 {
 	char* string = new char[MaxStringSize] {"1 + 2/3 -12 + 20 ="}; //"-11/2+22/03"
 	Solution wrap = Solution(string);
-	wrap = Solution("3 - 5 + 0 =");
-	wrap = Solution(" 12 - 5 + 10 =");
+	//wrap = Solution("3 - 5 + 0 =");
+	//wrap = Solution(" 12 - 5 + 10 =");
 	wrap = Solution(" 0*2 -5 * -3/-6 + 10 =");
-	wrap = Solution(" ( - 5 + 10 =");
-	Fraction{ 13,169 }.Show();
+	//wrap = Solution(" ( - 5 + 10 =");
+	//Fraction{ 13,169 }.Show();
 	//Fraction{ 5,4 }.Inc({ 1,2 })->Mul({1,2})->Show();
 	//Fraction{ 3,4 }.Mul({ 11,18 })->Show();
 	//Fraction{ 3,5 }.Dec({ 1,2 })->Show();
