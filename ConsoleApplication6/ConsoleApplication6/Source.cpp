@@ -1,21 +1,24 @@
 #include <iostream>
 using namespace std;
-const size_t MaxStringSize = 255;
 
 struct Fraction
 {
 	int integer;
 	int numerator;
 	int denominator;
+	bool division_by_zero;
 
 	Fraction(int numerator = 0, int denominator = 1, int integer = 0)
 	{
+		this->division_by_zero = (denominator == 0);
 		this->numerator = numerator;
-		this->denominator = denominator; // !=0
+		this->denominator = denominator;
 		this->integer = integer;
 	}
 	Fraction* Inc(Fraction item)
 	{
+		Induction();
+		item.Induction();
 		this->integer = integer + item.integer;
 		this->numerator = numerator*item.denominator + item.numerator*denominator;
 		this->denominator *= item.denominator;
@@ -23,7 +26,8 @@ struct Fraction
 	}
 	Fraction* Dec(Fraction item)
 	{
-		this->integer = integer - item.integer;
+		Induction();
+		item.Induction();
 		this->numerator = numerator*item.denominator - item.numerator*denominator;
 		this->denominator *= item.denominator;
 		return this;
@@ -40,22 +44,30 @@ struct Fraction
 	{
 		Induction();
 		item.Induction();
+		this->division_by_zero = division_by_zero || item.numerator == 0;
 		this->numerator = numerator * item.denominator;
-		this->denominator *= item.numerator; // !=0
+		this->denominator *= item.numerator;
 		return this;
 	}
-	void Induction()
+	Fraction* Induction()
 	{
 		numerator = numerator + integer*denominator;
 		integer = 0;
+		return this;
 	}
-	void Reduction()
+	Fraction* Reduction()
 	{
 		Induction();
-		if (numerator < 0 && denominator < 0) this->Mul({-1, -1}); // сокращение знака
+		if (division_by_zero) return this;
+		// целая часть
 		integer = numerator / denominator;
-		if (integer) numerator = numerator%denominator;
 
+		// сокращение знака
+		if (integer) numerator = numerator%denominator;
+		if (integer < 0 ) numerator *= -1;
+		if (numerator < 0 && denominator < 0) this->Mul({-1, -1}); 
+
+		// сокращение дробной части
 		int min = (numerator < denominator) ? numerator : denominator;
 		for (; min > 1; --min)
 		{
@@ -65,103 +77,39 @@ struct Fraction
 				denominator /= min;
 			}
 		}
+		return this;
 	}
 	void Show()
 	{
+		if (division_by_zero)
+		{
+			cout << "error: Division by zero" << endl;
+			return;
+		}
 		Reduction(); // сокращение
 		if (integer) cout << integer; // целая часть
 		if (integer && numerator) cout << "_"; // разделитель
 		if (numerator) cout << numerator << "/" << denominator; // дробная часть
 		if (!integer && !numerator) cout << "0";
-		cout << endl;
-	}
-};
-struct Solution
-{
-	enum State { Sstate, Astate, Mstate, Dstate, End, States = End } state;
-	char* buff; //
-	bool error;
-	// Solution* subject;
-	Fraction result;
-	Fraction subj;
-	Fraction* (Fraction::*act)(Fraction) = &Fraction::Inc; // вот оно че
-
-	Solution(char* buff)
-	{
-		cout << buff << " ";
-
-		this->buff = buff;
-		this->error = false;
-
-		result = Fraction();
-		subj = Fraction();
-		state = Sstate;
-		while (*this->buff != '\0' && !error) Step();
-
-		if (error) cout << "error ->" << this->buff << endl;
-		else result.Show();
-		//cout << endl;
-	}
-	//Solution() :Solution(nullptr)
-	//{
-	//}
-	int GetNum() // long
-	{
-		char* offset = buff;
-		int out;
-		out = strtol(buff, &buff, 10); // обрабатывает цифру ноль в том числе
-		error = (offset == buff);
-		return out;
-	}
-	void Step() {
-		
-		// только %d - +
-		switch (state)
-		{
-
-		case Sstate:
-			if (*buff == ' ') ++buff;
-			//else if (*buff == '(') ++buff, subj = Solution(buff).result;
-			else subj.numerator = GetNum(), state = Astate;
-			break;
-		case Astate:
-			if (*buff == ' ') ++buff;
-			else if (*buff == '*') ++buff, state = Mstate;
-			else if (*buff == '/') ++buff, state = Dstate;
-			else if (*buff == '+') result.Inc(subj), ++buff, subj = { 0,1 }, state = Sstate;
-			else if (*buff == '-') result.Inc(subj), ++buff, subj = { 0,-1 }, state = Sstate;
-			else if (*buff == '=') result.Inc(subj), ++buff, subj = { 0,1 }, error = (*buff != '\0'), state = End;
-			else error = true;
-			break;
-		case Mstate:
-			subj.Mul( GetNum() );
-			break;
-		case Dstate:
-			subj.Div( GetNum() ), state = Astate;
-			break;
-		case End:
-			break;
-		default:
-			error = true;
-
-			break;
-		}
+		cout << endl << endl;
 	}
 };
 
 void main()
 {
-	char* string = new char[MaxStringSize] {"1 + 2/3 -12 + 20 ="}; //"-11/2+22/03"
-	Solution wrap = Solution(string);
-	//wrap = Solution("3 - 5 + 0 =");
-	//wrap = Solution(" 12 - 5 + 10 =");
-	wrap = Solution(" 0*2 -5 * -3/-6 + 10 =");
-	//wrap = Solution(" ( - 5 + 10 =");
-	//Fraction{ 13,169 }.Show();
-	//Fraction{ 5,4 }.Inc({ 1,2 })->Mul({1,2})->Show();
-	//Fraction{ 3,4 }.Mul({ 11,18 })->Show();
-	//Fraction{ 3,5 }.Dec({ 1,2 })->Show();
-	Fraction{ 9,2 }.Div({ 1,2 })->Show();
+	// Проверки
+	cout << "Inc:" << endl;
+	cout << "1_1/2 + 3_5/8 = ";		Fraction({ 1,2,1 }).Inc({5,8,3})->Show();
+	cout << "Dec:" << endl;
+	cout << "1_1/2 - 3_5/8 = ";		Fraction({ 1,2,1 }).Dec({ 5,8,3 })->Show();
+	cout << "Mul:" << endl;
+	cout << "1_1/2 * 3_5/8 = ";		Fraction({ 1,2,1 }).Mul({ 5,8,3 })->Show();
+	cout << "Div:" << endl;
+	cout << "1_1/2 / 3_5/8 = ";		Fraction({ 1,2,1 }).Div({ 5,8,3 })->Show();
+	cout << "Reduction:" << endl;
+	cout << "5_-13/-169 = ";		Fraction({ -13,-169,5 }).Reduction()->Show();
+	cout << "Division by zero:" << endl;
+	cout << "1/0 = ";				Fraction({ 1,0 }).Show();
+	cout << "1/2 / 0/8 = ";			Fraction({ 1,2 }).Div({ 0,8 })->Show();
 	cout << endl;
-
 }
