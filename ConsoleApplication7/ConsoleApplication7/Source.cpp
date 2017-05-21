@@ -1,4 +1,8 @@
+//Ќаписати програму, €ка реал≥зуЇ телефонну книгу з вказаною користувачем к≥льк≥стю абонент≥в ≥ вс≥ма необх≥дними функц≥€ми. ¬икористати вкладен≥ структури //(дл€ адреси чи ѕ≤Ѕ). –еал≥зувати можлив≥сть додати абонента в книгу, видалити абонента з книги, зм≥нити ≥нформац≥ю про нього.
+//“акож додати можлив≥сть виведенн€ абонент≥в ≥м'€ €ких починаЇтьс€ на введену користувачем букву
+
 #include <iostream>
+#include <fstream>
 #include <conio.h>
 #include <stdlib.h>
 using namespace std;
@@ -17,50 +21,26 @@ struct Date
 		this->year = year;
 	}
 };
-struct Address
-{
-	char*	city;
-	char*	street;
-	char*	building;
-	Address(char* city = "", char* street = "", char* building = "") {
-		this->city = new char[MaxStringSize];
-		this->street = new char[MaxStringSize];
-		this->building = new char[MaxStringSize];
-		strcpy(this->city, city);
-		strcpy(this->street, street);
-		strcpy(this->building, building);
-	}
-	// Address() : Address("", "", "") {};
-	~Address()
-	{
-		delete[]city, city = nullptr;
-		delete[]street, street = nullptr;
-		delete[]building, building = nullptr;
-	}
-};
+
 struct Subscriber
 {
 	char*	name;
 	char*	phone;
 	Date	birthday;
-	//Address	location;
 
-	Subscriber(char* name = "", char* phone = "", char* city = "", char* street = "", char* building = "", size_t day = 1, size_t month = 1, size_t year = 1970)
+	Subscriber(char* name = "", char* phone = "", size_t day = 1, size_t month = 1, size_t year = 1970)
 	{
 		this->name = new char[MaxStringSize];
 		this->phone = new char[MaxStringSize];
 		strcpy(this->name, name);
 		strcpy(this->phone, phone);
-		//this->location = Address(city, street, building);
 		this->birthday = Date(day, month, year);
 	}
-	//Subscriber() : Subscriber(0) {
-	//};
+
 	void Show()
 	{
 		cout << this->name << " : ";
 		cout << this->phone << " : ";
-		//printf("%s %s, %s : ", location.city, location.street, location.building);
 		printf("%d-%d-%d", birthday.year, birthday.month, birthday.day);
 		cout << endl;
 	}
@@ -81,7 +61,7 @@ struct  Phonebook
 		this->index = nullptr;
 	}
 
-	bool NewItem(char* name = "", char* phone = "", char* city = "", char* street = "", char* building = "", size_t day = 1, size_t month = 1, size_t year = 1970) {
+	bool NewItem(char* name = "", char* phone = "", size_t day = 1, size_t month = 1, size_t year = 1970) {
 		++size;
 		Subscriber** tmp = new Subscriber*[size];
 		for (size_t i = 0; i < size; i++)
@@ -91,14 +71,27 @@ struct  Phonebook
 				//delete index[i];
 			}
 			else {
-				item = tmp[i] = new Subscriber(name, phone, city, street, building, day, month, year); 
+				item = tmp[i] = new Subscriber(name, phone, day, month, year);
 			}
 		}
 		if (index) delete[]index;
 		index = tmp;
 		return true;
 	}
-
+	void CinItem() {
+		NewItem();
+		cin.ignore();
+		cout << "¬ведiть iм'€: ";
+		cin.getline(item->name, MaxStringSize);
+		cout << "¬ведiть номер телефона: ";
+		cin.getline(item->phone, MaxStringSize);
+		cout << "¬ведiть рiк народженн€: ";
+		cin >> item->birthday.year;
+		cout << "¬ведiть мiс€ць народженн€: ";
+		cin >> item->birthday.month;
+		cout << "¬ведiть день народженн€: ";
+		cin >> item->birthday.day;
+	}
 	bool SelectItem(size_t idx) {
 		if (size > idx) {
 			item = index[idx];
@@ -117,15 +110,52 @@ struct  Phonebook
 		}
 		else return false;
 	}
+	void CinDelItem() {
+		size_t idx;
+		cout << "¬ведiть #: ";
+		cin >> idx;
+		if (DelItem(idx)) {
+			cout << "јбонента " << idx << " видалено" << endl;
+		}
+		else cout << "Error, case 2" << endl;
+	}
+	void CinModItem() {
+		size_t idx;
+		cout << "¬ведiть #: ";
+		cin >> idx;
+		cin.ignore();
+		if (SelectItem(idx)) {
+			item->Show();
+			cout << "¬ведiть нове iм'€: ";
+			cin.getline(item->name, MaxStringSize);
+			cout << "¬ведiть новий номер телефона: ";
+			cin.getline(item->phone, MaxStringSize);
+			cout << "¬ведiть новий рiк народженн€: ";
+			cin >> item->birthday.year;
+			cout << "¬ведiть новий мiс€ць народженн€: ";
+			cin >> item->birthday.month;
+			cout << "¬ведiть новий день народженн€: ";
+			cin >> item->birthday.day;
+		}
+		else cout << "Error, case 3" << endl;
+	}
+	void CinSelectItem() {
+		char letter = 'A';
+		cout << "¬ведiть лiтеру: ";
+		cin >> letter;
+		Show(letter);
+		cout << "Press any key";
+		getch();
+	}
 	void Show(char letter) {
 		int num = 0;
 		if (size) {
 			for (size_t i = 0; i < size; ++i)
 			{
 				if (letter == index[i]->name[0]) {
-				cout << i << " : ";
-				index[i]->Show();
-				++num;
+					cout << i << " : ";
+					index[i]->Show();
+					++num;
 				}
 			}
 			if (!num) cout << "јбонентiв на лiтеру " << letter << " не знайдено";
@@ -143,6 +173,71 @@ struct  Phonebook
 			cout << endl;
 		}
 	}
+	void Save() {
+		ofstream fout;
+		fout.open("phb.txt");
+		if (!fout.is_open())
+		{
+			cout << "Can not open file for writing!" << endl;
+		}
+		else
+		{
+			fout << size << endl;
+			for (size_t i = 0; i < size; i++)
+			{
+				fout << strlen(index[i]->name) << endl;
+				fout << index[i]->name << endl;
+				fout << strlen(index[i]->phone) << endl;
+				fout << index[i]->phone << endl;
+				fout << index[i]->birthday.year << endl;
+				fout << index[i]->birthday.month << endl;
+				fout << index[i]->birthday.day << endl;
+			}
+			fout.close();
+			cout << "Phonebook wrote to file!" << endl;
+		}
+	}
+
+	void Read() {
+		ifstream fin;
+		fin.open("phb.txt");
+		if (!fin.is_open())
+		{
+			cout << "Can not open file for reading!" << endl;
+		}
+		else
+		{
+			size_t _size;
+			size_t _stringsize;
+			size_t	_year;
+			size_t	_month;
+			size_t	_day;
+
+			fin >> _size;
+			for (size_t i = 0; i < _size; i++)
+			{
+				fin >> _stringsize;
+				char* _name = new char[_stringsize + 1];
+				fin.ignore();
+				fin.getline(_name, _stringsize + 1);
+
+				fin >> _stringsize;
+				char* _phone = new char[_stringsize + 1];
+				fin.ignore();
+				fin.getline(_phone, _stringsize + 1);
+
+				fin >> _year;
+				fin >> _month;
+				fin >> _day;
+
+				this->NewItem(_name, _phone, _day, _month, _year);
+				delete[]_name;
+				delete[]_phone;
+			}
+			fin.close();
+		}
+	}
+
 	~Phonebook() {
 		delete[]index;
 		index = nullptr;
@@ -154,14 +249,16 @@ void main()
 
 	Phonebook* my = new Phonebook;
 
-	my->NewItem("Ivan", "050-984-56-84");
-	my->NewItem("Petro", "068-408-39-56");
-	my->NewItem("Olena", "068-464-20-46");
-	my->NewItem("Anna", "096-722-63-79");
+	//my->NewItem("Ivan", "050-984-56-84", 1, 2, 2002);
+	//my->NewItem("Petro", "068-408-39-56", 12, 11, 1978);
+	//my->NewItem("Olena", "068-464-20-46", 31, 7, 2000);
+	//my->NewItem("Anna", "096-722-63-79", 17, 12, 2001);
 
-	size_t idx;
+	//my->Save();
+
+	my->Read();
+
 	char action = 'q';
-	char letter = 'A';
 	do
 	{
 		system("cls");
@@ -172,57 +269,25 @@ void main()
 		cout << "2 - видалити абонента з книги" << endl;
 		cout << "3 - змiнити iнформацiю про абонента" << endl;
 		cout << "4 - виведенн€ абонентiв на лiтеру" << endl;
+		cout << "5 - зберегти книгу у файл" << endl;
 		cout << "q - закiнчити роботу з програмою" << endl;
 		cin >> action;
 		switch (action)
 		{
 		case '1':
-			my->NewItem();
-			cin.ignore();
-			cout << "¬ведiть iм'€: ";
-			cin.getline(my->item->name, MaxStringSize);
-			cout << "¬ведiть номер телефона: ";
-			cin.getline(my->item->phone, MaxStringSize);
-			cout << "¬ведiть рiк народженн€: ";
-			cin >> my->item->birthday.year;
-			cout << "¬ведiть мiс€ць народженн€: ";
-			cin >> my->item->birthday.month;
-			cout << "¬ведiть день народженн€: ";
-			cin >> my->item->birthday.day;
+			my->CinItem();
 			break;
 		case '2':
-			cout << "¬ведiть #: ";
-			cin >> idx;
-			if (my->DelItem(idx)) {
-				cout << "јбонента " << idx << " видалено" << endl;
-			}
-			else cout << "Error, case 2" << endl;
+			my->CinDelItem();
 			break;
 		case '3':
-			cout << "¬ведiть #: ";
-			cin >> idx;
-			cin.ignore();
-			if (my->SelectItem(idx)) {
-				my->item->Show();
-				cout << "¬ведiть нове iм'€: ";
-				cin.getline(my->item->name, MaxStringSize);
-				cout << "¬ведiть новий номер телефона: ";
-				cin.getline(my->item->phone, MaxStringSize);
-				cout << "¬ведiть новий рiк народженн€: ";
-				cin >> my->item->birthday.year;
-				cout << "¬ведiть новий мiс€ць народженн€: ";
-				cin >> my->item->birthday.month;
-				cout << "¬ведiть новий день народженн€: ";
-				cin >> my->item->birthday.day;
-			}
-			else cout << "Error, case 3" << endl;
+			my->CinModItem();
 			break;
 		case '4':
-			cout << "¬ведiть лiтеру: ";
-			cin >> letter;
-			my->Show(letter);
-			cout << "Press any key";
-			getch();
+			my->CinSelectItem();
+			break;
+		case '5':
+			my->Save();
 			break;
 		default:
 			break;
