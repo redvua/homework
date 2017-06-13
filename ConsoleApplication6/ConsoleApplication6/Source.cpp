@@ -1,167 +1,248 @@
 #include <iostream>
 using namespace std;
+#define LINE (cout << endl << endl << "----------------------" << endl << endl)
 const size_t MaxStringSize = 255;
 
-struct Fraction
+class Fraction
 {
-	int integer;
+private:
 	int numerator;
 	int denominator;
 
-	Fraction(int numerator = 0, int denominator = 1, int integer = 0)
-	{
-		this->numerator = numerator;
-		this->denominator = denominator; // !=0
-		this->integer = integer;
-	}
-	Fraction* Inc(Fraction item)
-	{
-		this->integer = integer + item.integer;
-		this->numerator = numerator*item.denominator + item.numerator*denominator;
-		this->denominator *= item.denominator;
-		return this;
-	}
-	Fraction* Dec(Fraction item)
-	{
-		this->integer = integer - item.integer;
-		this->numerator = numerator*item.denominator - item.numerator*denominator;
-		this->denominator *= item.denominator;
-		return this;
-	}
-	Fraction* Mul(Fraction item)
-	{
-		Induction();
-		item.Induction();
-		this->numerator = numerator * item.numerator;
-		this->denominator *= item.denominator;
-		return this;
-	}
-	Fraction* Div(Fraction item)
-	{
-		Induction();
-		item.Induction();
-		this->numerator = numerator * item.denominator;
-		this->denominator *= item.numerator; // !=0
-		return this;
-	}
-	void Induction()
-	{
-		numerator = numerator + integer*denominator;
-		integer = 0;
-	}
-	void Reduction()
-	{
-		Induction();
-		if (numerator < 0 && denominator < 0) this->Mul({-1, -1}); // сокращение знака
-		integer = numerator / denominator;
-		if (integer) numerator = numerator%denominator;
+public:
+	Fraction(int, int, int);
+	//Fraction();
 
-		int min = (numerator < denominator) ? numerator : denominator;
-		for (; min > 1; --min)
-		{
-			if (!(numerator%min || denominator%min))
-			{
-				numerator /= min;
-				denominator /= min;
-			}
-		}
-	}
-	void Show()
-	{
-		Reduction(); // сокращение
-		if (integer) cout << integer; // целая часть
-		if (integer && numerator) cout << "_"; // разделитель
-		if (numerator) cout << numerator << "/" << denominator; // дробная часть
-		if (!integer && !numerator) cout << "0";
-		cout << endl;
-	}
+	// get
+	int Numerator() const;
+	int Denominator() const;
+	// set
+	int & Numerator();
+	int & Denominator();
+
+	void Show(bool) const;
+	Fraction & Reduction();
+	// Fraction Reduction() const; // ?
+
+	Fraction operator * (const Fraction) const;
+	Fraction operator / (const Fraction) const;
+
+	Fraction & operator ++ ();
+	Fraction operator ++ (int);
+	Fraction & operator -- ();
+	Fraction operator -- (int);
+
+	bool operator > (const Fraction) const;
+	bool operator < (const Fraction) const;
+
+	operator int() const;
+	operator double() const;
+
+	~Fraction();
+
+private:
+	friend Fraction operator - (const Fraction, const Fraction);
 };
-struct Solution
+
+Fraction::Fraction(int numerator_ = 0, int denominator_ = 1, int integer = 0) : numerator(numerator_), denominator(denominator_)
 {
-	enum State { Sstate, Astate, Mstate, Dstate, End, States = End } state;
-	char* buff; //
-	bool error;
-	// Solution* subject;
-	Fraction result;
-	Fraction subj;
-	Fraction* (Fraction::*act)(Fraction) = &Fraction::Inc; // вот оно че
+	if (denominator_ == 0)
+		std::cerr << "Error: Division by zero\n", exit(1);
 
-	Solution(char* buff)
-	{
-		cout << buff << " ";
-
-		this->buff = buff;
-		this->error = false;
-
-		result = Fraction();
-		subj = Fraction();
-		state = Sstate;
-		while (*this->buff != '\0' && !error) Step();
-
-		if (error) cout << "error ->" << this->buff << endl;
-		else result.Show();
-		//cout << endl;
+	if (denominator < 0) { // перенос знака в числитель
+		numerator *= -1;
+		denominator *= -1;
 	}
-	//Solution() :Solution(nullptr)
-	//{
-	//}
-	int GetNum() // long
+	if (integer < 0 && numerator > 0) numerator *= -1; // сохранение знака
+
+	numerator += integer * denominator;
+}
+
+int Fraction::Numerator() const {
+	return numerator;
+}
+int Fraction::Denominator() const {
+	return denominator;
+}
+// )-:
+int & Fraction::Numerator() {
+	return numerator;
+}
+int & Fraction::Denominator() {
+	return denominator;
+}
+
+void Fraction::Show(bool induction = false) const
+{
+	int integer{ this->numerator / denominator };
+	int numerator{ this->numerator % denominator };
+	if (integer < 0) numerator *= -1; // сохранение знака
+	if (numerator == 0) cout << integer;
+		else if (induction) cout << this->numerator << "/" << denominator; // без выделения целой части
+			else if (integer == 0) cout << numerator << "/" << denominator;
+				else cout << integer << "_" << numerator << "/" << denominator;
+}
+
+Fraction Fraction::operator * (const Fraction right) const
+{
+	return Fraction(numerator * right.numerator, denominator * right.denominator);
+}
+Fraction Fraction::operator / (const Fraction right) const
+{
+	return Fraction(numerator * right.denominator, denominator * right.numerator);
+	//return (*this * Fraction{ right.denominator,right.numerator });
+}
+
+Fraction & Fraction::operator ++()
+{
+	numerator += denominator;
+	return *this;
+}
+Fraction Fraction::operator ++(int)
+{
+	Fraction old{ *this };
+	numerator += denominator;
+	return old;
+}
+Fraction & Fraction::operator --()
+{
+	numerator -= denominator;
+	return *this;
+}
+Fraction Fraction::operator --(int)
+{
+	Fraction old{ *this };
+	numerator -= denominator;
+	return old;
+}
+bool Fraction::operator > (const Fraction right) const
+{
+	return ((*this - right).numerator > 0);
+}
+bool Fraction::operator < (const Fraction right) const
+{
+	return ((*this - right).numerator < 0);
+}
+
+Fraction::operator int() const
+{
+	return numerator / denominator;
+}
+Fraction::operator double() const {
+	return double(numerator) / denominator;
+}
+
+Fraction::~Fraction() {}
+
+Fraction & Fraction::Reduction()
+{
+	// сохранение знака
+	int sign{ (numerator < 0) ? -1 : 1 };
+	numerator *= sign;
+
+	// сокращение дробной части
+	int min{ (numerator < denominator) ? numerator : denominator };
+	for (; min > 1; --min)
 	{
-		char* offset = buff;
-		int out;
-		out = strtol(buff, &buff, 10); // обрабатывает цифру ноль в том числе
-		error = (offset == buff);
-		return out;
-	}
-	void Step() {
-		
-		// только %d - +
-		switch (state)
+		if (!(numerator%min || denominator%min))
 		{
-
-		case Sstate:
-			if (*buff == ' ') ++buff;
-			//else if (*buff == '(') ++buff, subj = Solution(buff).result;
-			else subj.numerator = GetNum(), state = Astate;
-			break;
-		case Astate:
-			if (*buff == ' ') ++buff;
-			else if (*buff == '*') ++buff, state = Mstate;
-			else if (*buff == '/') ++buff, state = Dstate;
-			else if (*buff == '+') result.Inc(subj), ++buff, subj = { 0,1 }, state = Sstate;
-			else if (*buff == '-') result.Inc(subj), ++buff, subj = { 0,-1 }, state = Sstate;
-			else if (*buff == '=') result.Inc(subj), ++buff, subj = { 0,1 }, error = (*buff != '\0'), state = End;
-			else error = true;
-			break;
-		case Mstate:
-			subj.Mul( GetNum() );
-			break;
-		case Dstate:
-			subj.Div( GetNum() ), state = Astate;
-			break;
-		case End:
-			break;
-		default:
-			error = true;
-
-			break;
+			numerator /= min;
+			denominator /= min;
 		}
 	}
-};
+	numerator *= sign;
+	return *this;
+}
+//Fraction Fraction::Reduction() const
+//{
+//	return Fraction (numerator, denominator).Reduction();
+//}
+
+Fraction operator + (const Fraction a, const Fraction b)
+{
+	return Fraction(
+		a.Numerator() * b.Denominator() + b.Numerator() * a.Denominator(),
+		a.Denominator() * b.Denominator()
+	);
+}
+Fraction operator - (const Fraction a, const Fraction b)
+{
+	return Fraction(
+		a.numerator * b.denominator - b.numerator * a.denominator,
+		a.denominator * b.denominator
+	);
+}
+bool operator == (const Fraction a, const Fraction b)
+{
+	return ((a - b).Numerator() == 0);
+}
+bool operator != (const Fraction a, const Fraction b)
+{
+	// Fraction left{ a.Reduction() }, right{ b.Reduction() };
+	return !(a == b);
+}
 
 void main()
 {
-	char* string = new char[MaxStringSize] {"1 + 2/3 -12 + 20 ="}; //"-11/2+22/03"
-	Solution wrap = Solution(string);
-	//wrap = Solution("3 - 5 + 0 =");
-	//wrap = Solution(" 12 - 5 + 10 =");
-	wrap = Solution(" 0*2 -5 * -3/-6 + 10 =");
-	//wrap = Solution(" ( - 5 + 10 =");
-	//Fraction{ 13,169 }.Show();
-	//Fraction{ 5,4 }.Inc({ 1,2 })->Mul({1,2})->Show();
-	//Fraction{ 3,4 }.Mul({ 11,18 })->Show();
-	//Fraction{ 3,5 }.Dec({ 1,2 })->Show();
-	Fraction{ 9,2 }.Div({ 1,2 })->Show();
-	cout << endl;
+	Fraction z({}), a(1, 5, 1), b(1, 2), c(-4, -8);
+	cout << "Fraction({}) = ", z.Show();
+	LINE;
+	cout << "Fraction(1, 5, 1) = ", a.Show();
+	LINE;
+	Fraction si(156,-144), pi(1, -3, 3);
+	cout << "(" , si.Show(), cout << ").Reduction() = ", si.Reduction().Show();
+	LINE;
+	cout << "(" , si.Show(), cout << ").Induction() = ", si.Reduction().Show(true);
+	LINE;
+	cout << "(" , si.Show(), cout << ").setNumerator() = 14  -> ", si.Numerator() = 14, si.Show();
+	LINE;
 
+	pi.Show(), cout << " * ", a.Show(), cout << " = ";
+	pi.Show(true), cout << " * ", a.Show(true), cout << " = ";
+	(pi * a).Show(true), cout << " = ", (pi * a).Show();
+	LINE;
+	pi.Show(), cout << " / ", a.Show(), cout << " = ";
+	pi.Show(true), cout << " / ", a.Show(true), cout << " = ";
+	(pi / a).Show(true), cout << " = ", (pi / a).Show();
+	LINE;
+	pi.Show(), cout << " + ", a.Show(), cout << " = ";
+	pi.Show(true), cout << " + ", a.Show(true), cout << " = ";
+	(pi + a).Show(true), cout << " = ", (pi + a).Show();
+	LINE;
+	pi.Show(), cout << " - ", a.Show(), cout << " = ";
+	pi.Show(true), cout << " - ", a.Show(true), cout << " = ";
+	(pi - a).Show(true), cout << " = ", (pi - a).Show();
+	LINE;
+	a.Show(), cout << " - ", pi.Show(), cout << " = ";
+	a.Show(true), cout << " - ", pi.Show(true), cout << " = ";
+	(a - pi).Show(true), cout << " = ", (a - pi).Show();
+	LINE;
+
+	b.Show(true), cout << " == ", c.Show(true), cout << " = ";
+	cout << boolalpha << (b == c);
+	LINE;
+	b.Show(true), cout << " != ", c.Show(true), cout << " = ";
+	cout << boolalpha << (b != c);
+	LINE;
+	a.Show(), cout << " < ", c.Show(), cout << " = ";
+	cout << boolalpha << (a < c);
+	LINE;
+	a.Show(), cout << " > ", c.Show(), cout << " = ";
+	cout << boolalpha << (a > c);
+	LINE;
+
+	cout << "int(", pi.Show(), cout << ") = " << int(pi);
+	LINE;
+	cout << "double(", pi.Show(), cout << ") = " << double(pi);
+	LINE;
+
+	cout << "--(", si.Show(), cout << ") = ", (--si).Show(), cout << " -> ", si.Show();
+	LINE;
+	cout << "(", si.Show(), cout << ")-- = ", (si--).Show(), cout << " -> ", si.Show();
+	LINE;
+
+	cout << "++(", pi.Show(), cout << ") = ", (++pi).Show(), cout << " -> ", pi.Show();
+	LINE;
+	cout << "(", pi.Show(), cout << ")++ = ", (pi++).Show(), cout << " -> ", pi.Show();
+	LINE;
 }
