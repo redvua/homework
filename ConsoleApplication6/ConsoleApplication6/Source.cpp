@@ -1,7 +1,6 @@
 #include <iostream>
-using namespace std;
 #define LINE (cout << endl << endl << "----------------------" << endl << endl)
-const size_t MaxStringSize = 255;
+using namespace std;
 
 class Fraction
 {
@@ -11,7 +10,6 @@ private:
 
 public:
 	Fraction(int, int, int);
-	//Fraction();
 
 	// get
 	int Numerator() const;
@@ -83,14 +81,14 @@ void Fraction::Show(bool induction = false) const
 				else cout << integer << "_" << numerator << "/" << denominator;
 }
 
-Fraction Fraction::operator * (const Fraction right) const
+Fraction Fraction::operator * (const Fraction b) const
 {
-	return Fraction(numerator * right.numerator, denominator * right.denominator);
+	return Fraction(numerator * b.numerator, denominator * b.denominator);
 }
-Fraction Fraction::operator / (const Fraction right) const
+Fraction Fraction::operator / (const Fraction b) const
 {
-	return Fraction(numerator * right.denominator, denominator * right.numerator);
-	//return (*this * Fraction{ right.denominator,right.numerator });
+	return Fraction(numerator * b.denominator, denominator * b.numerator);
+	//return (*this * Fraction{ b.denominator, b.numerator });
 }
 
 Fraction & Fraction::operator ++()
@@ -115,13 +113,13 @@ Fraction Fraction::operator --(int)
 	numerator -= denominator;
 	return old;
 }
-bool Fraction::operator > (const Fraction right) const
+bool Fraction::operator > (const Fraction b) const
 {
-	return ((*this - right).numerator > 0);
+	return ((*this - b).numerator > 0);
 }
-bool Fraction::operator < (const Fraction right) const
+bool Fraction::operator < (const Fraction b) const
 {
-	return ((*this - right).numerator < 0);
+	return ((*this - b).numerator < 0);
 }
 
 Fraction::operator int() const
@@ -165,7 +163,7 @@ Fraction operator + (const Fraction a, const Fraction b)
 		a.Denominator() * b.Denominator()
 	);
 }
-Fraction operator - (const Fraction a, const Fraction b)
+Fraction operator - (const Fraction a, const Fraction b) // friend
 {
 	return Fraction(
 		a.numerator * b.denominator - b.numerator * a.denominator,
