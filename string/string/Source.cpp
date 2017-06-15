@@ -1,7 +1,6 @@
 #include <iostream>
 #define LINE (cout << endl << endl << "----------------------" << endl << endl)
 using namespace std;
-const size_t MaxStringSize = 255;
 
 class String
 {
@@ -21,9 +20,15 @@ public:
 	String operator ++ (int);
 
 	bool operator < (const String) const;
+	bool operator > (const String) const;
+	bool operator <= (const String) const;
+	bool operator >= (const String) const;
+	bool operator == (const String) const;
+	bool operator != (const String) const;
 	~String();
 
 private:
+	int Compare(const String) const;
 	int inString(char) const;
 };
 
@@ -33,7 +38,6 @@ size_t strlen(char* val)
 	while (val[i]) ++i;
 	return i;
 }
-// char & char::operator + () // ?
 
 String::String(const char* val = "")
 {
@@ -133,12 +137,42 @@ String String::operator ++ (int)
 
 bool String::operator < (const String b) const
 {
-	bool out{ false };
+	return Compare(b) < 0;
+}
 
-	for (size_t i = 0; value[i]; ++i) {
-		if (value[i] > b.value[i]) return false;
+bool String::operator > (const String b) const
+{
+	return Compare(b) > 0;
+}
+
+bool String::operator <= (const String b) const
+{
+	return Compare(b) <= 0;
+}
+
+bool String::operator >= (const String b) const
+{
+	return Compare(b) >= 0;
+}
+
+bool String::operator == (const String b) const
+{
+	return Compare(b) == 0;
+}
+
+bool String::operator != (const String b) const
+{
+	return Compare(b) != 0;
+}
+
+int String::Compare(const String b) const
+{
+	int out = size - b.size;
+	for (size_t i = 0; out == 0 && value[i]; ++i)
+	{
+		out += value[i] - b.value[i];
 	}
-	return true;//String(buff)
+	return out;
 }
 
 int String::inString(char search) const
@@ -171,13 +205,27 @@ void main()
 	LINE;
 	cout << "asdfg + ", a.Print(), cout << " = ", ("asdfg" + a).Print();
 	LINE;
-
 	cout << "!", b.Print(), cout << " = ", (!b).Print();
 	LINE;
+
 	String c("Abcd");
 	String d("Abcd");
 	cout << "++", c.Print(), cout << " = ", (++c).Print(), cout << " -> ", c.Print();
 	LINE;
 	d.Print(), cout << "++ = ", (d++).Print(), cout << " -> ", d.Print();
+	LINE;
+
+	String e("microsoft");
+	a.Print(), cout << " > ", e.Print(), cout << " = " << boolalpha << (a > e);
+	LINE;
+	a.Print(), cout << " < ", e.Print(), cout << " = " << boolalpha << (a < e);
+	LINE;
+	a.Print(), cout << " >= ", e.Print(), cout << " = " << boolalpha << (a >= e);
+	LINE;
+	a.Print(), cout << " <= ", e.Print(), cout << " = " << boolalpha << (a <= e);
+	LINE;
+	a.Print(), cout << " == ", e.Print(), cout << " = " << boolalpha << (a == e);
+	LINE;
+	a.Print(), cout << " != ", e.Print(), cout << " = " << boolalpha << (a != e);
 	LINE;
 }
