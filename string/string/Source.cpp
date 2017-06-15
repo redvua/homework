@@ -10,26 +10,42 @@ public:
 	String(const char*);
 	String(const String &);
 	void Print() const;
-	String operator * (const String) const;
-	String operator / (const String) const;
-	String operator + (const String) const;
+
+	String operator * (const String &) const;
+	String operator / (const String &) const;
+	String operator + (const String &) const;
 	String operator + (const char*) const;
+
+	String & operator = (const String &);
+	String & operator = (const char*);
+	String & operator *= (const String &);
+	String & operator /= (const String &);
+	String & operator += (const String &);
 
 	String operator ! () const;
 	String & operator ++ ();
 	String operator ++ (int);
 
-	bool operator < (const String) const;
-	bool operator > (const String) const;
-	bool operator <= (const String) const;
-	bool operator >= (const String) const;
-	bool operator == (const String) const;
-	bool operator != (const String) const;
+	bool operator < (const String &) const;
+	bool operator > (const String &) const;
+	bool operator <= (const String &) const;
+	bool operator >= (const String &) const;
+	bool operator == (const String &) const;
+	bool operator != (const String &) const;
+
+	char operator [] (size_t) const;
+	char & operator [] (size_t);
+	String operator () (size_t) const;
+	String operator () (size_t, size_t) const;
+
 	~String();
 
 private:
-	int Compare(const String) const;
+	int Compare(const String &) const;
 	int inString(char) const;
+
+	friend ostream & operator << (ostream &, const String &);
+	friend istream & operator >> (istream &, const String &);
 };
 
 size_t strlen(char* val)
@@ -58,7 +74,19 @@ void String::Print() const
 	cout << value;
 }
 
-String String::operator * (const String b) const
+ostream & operator << (ostream & out, const String & b) 
+{
+	out << b.value;
+	return out;
+}
+
+istream & operator >> (istream & in, const String & b)
+{
+	in >> b.value;
+	return in;
+}
+
+String String::operator * (const String & b) const
 {
 
 	const String & min = (size <= b.size) ? *this : b;
@@ -75,7 +103,7 @@ String String::operator * (const String b) const
 	return String( buff );
 }
 
-String String::operator / (const String b) const
+String String::operator / (const String & b) const
 {
 	char* buff = new char[size + 1] {};
 	size_t sze = 0;
@@ -89,7 +117,7 @@ String String::operator / (const String b) const
 	return String( buff );
 }
 
-String String::operator + (const String b) const
+String String::operator + (const String & b) const
 {
 	char* buff = new char[size + b.size + 1]{};
 
@@ -98,15 +126,49 @@ String String::operator + (const String b) const
 	return String(buff);
 }
 
-
 String String::operator + (const char* b) const
 {
 	return *this + String{ b };
 }
 
-String operator + (const char* a, const String b)
+String operator + (const char* a, const String & b)
 {
 	return String{ a } + b;
+}
+
+String & String::operator = (const String & b)
+{
+	if (this == &b) return *this;
+	size = b.size;
+	delete[]value;
+	// value = nullptr;
+	value = new char[size + 1]{};
+	memcpy(value, b.value, size);
+	return *this;
+}
+
+String & String::operator = (const char* b)
+{
+	*this = String{ b };
+	return *this;
+}
+
+String & String::operator *= (const String & b)
+{
+	*this = *this * b;
+	return *this;
+}
+
+String & String::operator /= (const String & b)
+{
+	*this = *this / b;
+	return *this;
+}
+
+String & String::operator += (const String & b)
+{
+	*this = *this + b;
+	return *this;
 }
 
 String String::operator ! () const
@@ -135,37 +197,37 @@ String String::operator ++ (int)
 	return old;
 }
 
-bool String::operator < (const String b) const
+bool String::operator < (const String & b) const
 {
 	return Compare(b) < 0;
 }
 
-bool String::operator > (const String b) const
+bool String::operator > (const String & b) const
 {
 	return Compare(b) > 0;
 }
 
-bool String::operator <= (const String b) const
+bool String::operator <= (const String & b) const
 {
 	return Compare(b) <= 0;
 }
 
-bool String::operator >= (const String b) const
+bool String::operator >= (const String & b) const
 {
 	return Compare(b) >= 0;
 }
 
-bool String::operator == (const String b) const
+bool String::operator == (const String & b) const
 {
 	return Compare(b) == 0;
 }
 
-bool String::operator != (const String b) const
+bool String::operator != (const String & b) const
 {
 	return Compare(b) != 0;
 }
 
-int String::Compare(const String b) const
+int String::Compare(const String & b) const
 {
 	int out = size - b.size;
 	for (size_t i = 0; out == 0 && value[i]; ++i)
@@ -184,6 +246,39 @@ int String::inString(char search) const
 	return -1;
 }
 
+char String::operator [](size_t i) const // ?
+{
+	if (i > size - 1) {
+		// std::cerr << "Error: out of range";
+		return 0;
+	}
+	return value[i];
+}
+
+char & String::operator [](size_t i)
+{
+	if (i > size - 1) {
+		std::cerr << "Error: out of range";
+	}
+	return value[i];
+}
+
+String String::operator () (size_t start) const
+{ 
+	return (start > size) ? String{} : String{ value + start };
+}
+
+String String::operator () (size_t start, size_t length) const
+{
+	if (start > size) start = size;
+	if (start + length > size) length = size - start;
+	if (!length || start == size) return String{};
+
+	char* buff = new char[length + 1]{};
+	memcpy(buff, value + start, length);
+	return  String{ buff };
+}
+
 String::~String()
 {
 	delete[]value;
@@ -191,41 +286,41 @@ String::~String()
 }
 void main()
 {
-	LINE;
 
 	String a("Microsoft");
 	String b("Windows");
-	a.Print(), cout << " * ", b.Print(), cout << " = ", (a * b).Print();
+
+	cout << "\n\tHomework 05\n\n";
+	cout << a << " = " << b, a = b, cout << " -> " << a;
+	a = "Microsoft";
 	LINE;
-	a.Print(), cout << " / ", b.Print(), cout << " = ", (a / b).Print();
+	cout << a << " *= " << b, a *= b, cout << " -> " << a;
+	a = "Microsoft";
 	LINE;
-	a.Print(), cout << " + ", b.Print(), cout << " = ", (a + b).Print();
+	cout << a << " /= " << b, a /= b, cout << " -> " << a;
+	a = "Microsoft";
 	LINE;
-	a.Print(), cout << " + asdfg = ", (a + "asdfg").Print();
+	cout << a << " += " << b, a += b, cout << " -> " << a;
+	a = "Microsoft";
 	LINE;
-	cout << "asdfg + ", a.Print(), cout << " = ", ("asdfg" + a).Print();
+	cout << a << " += asdfg ", a += "asdfg", cout << " -> " << a;
+	a = "Microsoft";
 	LINE;
-	cout << "!", b.Print(), cout << " = ", (!b).Print();
+	cout << a << " [0] = ", cout << a[0] << endl;
+	cout << a << " [5] = $ -> ", a[5] = '$', cout << a << endl;
+	a = "Microsoft";
+	cout << a << " [9] = " << a[9];
 	LINE;
 
-	String c("Abcd");
-	String d("Abcd");
-	cout << "++", c.Print(), cout << " = ", (++c).Print(), cout << " -> ", c.Print();
+	cout << a << "(3) = " << a(3);
 	LINE;
-	d.Print(), cout << "++ = ", (d++).Print(), cout << " -> ", d.Print();
+	cout << a << "(2, 4) = " << a(2, 4);
+	LINE;
+	cout << a << "(10, 10) = " << a(10,10);
+	LINE;
+	cout << "Input String: ";
+	cin >> a;
+	cout << a << ": String(1,3) = " << a(1,3);
 	LINE;
 
-	String e("microsoft");
-	a.Print(), cout << " > ", e.Print(), cout << " = " << boolalpha << (a > e);
-	LINE;
-	a.Print(), cout << " < ", e.Print(), cout << " = " << boolalpha << (a < e);
-	LINE;
-	a.Print(), cout << " >= ", e.Print(), cout << " = " << boolalpha << (a >= e);
-	LINE;
-	a.Print(), cout << " <= ", e.Print(), cout << " = " << boolalpha << (a <= e);
-	LINE;
-	a.Print(), cout << " == ", e.Print(), cout << " = " << boolalpha << (a == e);
-	LINE;
-	a.Print(), cout << " != ", e.Print(), cout << " = " << boolalpha << (a != e);
-	LINE;
 }
