@@ -10,6 +10,7 @@ public:
 	String(const char*);
 	String(const String &);
 	void Print() const;
+	size_t Size() const;
 
 	String operator * (const String &) const;
 	String operator / (const String &) const;
@@ -48,6 +49,66 @@ private:
 	friend istream & operator >> (istream &, const String &);
 };
 
+class Var
+{
+	char* value;
+	enum  TYPE { NaN, INT, DOUBLE, STRING, TYPES = STRING + 1 } type;
+
+public:
+	// template<typename T>
+	// Var(T&&);
+	Var(const int);
+	Var(const double &&);
+	Var(const String &);
+	~Var();
+
+private:
+	friend ostream & operator << (ostream &, const Var &);
+};
+
+
+//	if (size == sizeof(int)) type = INT;
+//	else if (size == sizeof(double)) type = DOUBLE;
+//	else type = STRING;
+
+//template<typename T>
+//Var::Var(T && val)
+//{
+//	cout << "T: " << sizeof(val) << endl;
+//	value = new char[sizeof(val)] {};
+//	memcpy(value, &val, sizeof(val));
+//}
+
+Var::Var(const int val)
+{
+	type = INT;
+	value = new char[sizeof(val)]{};
+	memcpy(value, &val, sizeof(val));
+	cout << "INT: " << (int)value << ": " << sizeof(val) << endl;
+}
+
+Var::Var(const double && val)
+{
+	type = DOUBLE;
+	value = new char[sizeof(val)]{};
+	memcpy(value, &val, sizeof(val));
+	cout << "DOUBLE: " << value << ": " << sizeof(val) << endl;
+}
+
+Var::Var(const String & val = String{""})
+{
+	type = STRING;
+	value = new char[sizeof(int) + val.Size() + 1]{};
+	memcpy(value, &val, sizeof(val));
+	cout << "STRING: " << value << ": " << sizeof(val) << endl;
+}
+
+Var::~Var()
+{
+	delete[]value;
+	value = nullptr;
+}
+
 size_t strlen(char* val)
 {
 	size_t i = 0;
@@ -74,7 +135,18 @@ void String::Print() const
 	cout << value;
 }
 
+size_t String::Size() const
+{
+	return size;
+}
+
 ostream & operator << (ostream & out, const String & b) 
+{
+	out << b.value;
+	return out;
+}
+
+ostream & operator << (ostream & out, const Var & b)
 {
 	out << b.value;
 	return out;
@@ -284,12 +356,17 @@ String::~String()
 	delete[]value;
 	value = nullptr;
 }
+
 void main()
 {
 
 	String a("Microsoft");
 	String b("Windows");
-
+	Var{ 1 };
+	Var{1.2};
+	Var{ a };
+	Var{ "Cha" };
+	/*
 	cout << "\n\tHomework 05\n\n";
 	cout << a << " = " << b, a = b, cout << " -> " << a;
 	a = "Microsoft";
@@ -321,6 +398,6 @@ void main()
 	cout << "Input String: ";
 	cin >> a;
 	cout << a << ": String(1,3) = " << a(1,3);
-	LINE;
+	LINE; */
 
 }
