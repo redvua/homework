@@ -58,8 +58,8 @@ public:
 	// template<typename T>
 	// Var(T&&);
 	Var(const int);
-	Var(const double &&);
-	Var(const String &);
+	Var(const double);
+	Var(const String);
 	~Var();
 
 private:
@@ -84,23 +84,27 @@ Var::Var(const int val)
 	type = INT;
 	value = new char[sizeof(val)]{};
 	memcpy(value, &val, sizeof(val));
-	cout << "INT: " << (int)value << ": " << sizeof(val) << endl;
+	int* out = (int*)value;
+	// memcpy(&out, value, sizeof(val));
+	cout << "INT: " << *out << ": " << sizeof(val) << endl;
 }
 
-Var::Var(const double && val)
+Var::Var(const double val)
 {
 	type = DOUBLE;
 	value = new char[sizeof(val)]{};
 	memcpy(value, &val, sizeof(val));
-	cout << "DOUBLE: " << value << ": " << sizeof(val) << endl;
+	double* out = (double*)value;
+	cout << "DOUBLE: " << *out << ": " << sizeof(val) << endl;
 }
 
-Var::Var(const String & val = String{""})
+Var::Var(const String val)// = String{""}
 {
 	type = STRING;
 	value = new char[sizeof(int) + val.Size() + 1]{};
-	memcpy(value, &val, sizeof(val));
-	cout << "STRING: " << value << ": " << sizeof(val) << endl;
+	memcpy(value, &val, sizeof(int) + val.Size() + 1);
+	String* out = (String*)value;
+	cout << "STRING: " << *out << ": " << sizeof(int) + val.Size() + 1 << endl;
 }
 
 Var::~Var()
@@ -362,7 +366,7 @@ void main()
 
 	String a("Microsoft");
 	String b("Windows");
-	Var{ 1 };
+	Var{ 3 };
 	Var{1.2};
 	Var{ a };
 	Var{ "Cha" };
