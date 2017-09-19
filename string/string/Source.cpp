@@ -101,10 +101,10 @@ Var::Var(const double val)
 Var::Var(const String val)// = String{""}
 {
 	type = STRING;
-	value = new char[sizeof(int) + val.Size() + 1]{};
-	memcpy(value, &val, sizeof(int) + val.Size() + 1);
+	value = new char[sizeof(String)]{}; // sizeof(int) + val.Size() + 1
+	memcpy(value, &val, sizeof(String)); // sizeof(int) + val.Size() + 1
 	String* out = (String*)value;
-	cout << "STRING: " << *out << ": " << sizeof(int) + val.Size() + 1 << endl;
+	cout << "STRING: " << *out << ": " << sizeof(int) + val.Size() + 1 << ":: " << sizeof(String) << endl;
 }
 
 Var::~Var()
